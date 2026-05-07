@@ -1,0 +1,16 @@
+# Data and Models
+data/
+*.csv
+*.parquet
+*.tar.gz
+*.joblib
+*.pkl
+
+# Python environment
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Notebooks
+.ipynb_checkpoints/
