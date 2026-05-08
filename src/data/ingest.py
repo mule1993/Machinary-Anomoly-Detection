@@ -21,7 +21,8 @@ def load_csv_from_s3(
     )
     s3 = session.client("s3")
     obj = s3.get_object(Bucket=bucket, Key=key)
-    return pd.read_csv(obj["Body"])
+    # Read the CSV file directly from the S3 object(tab-separated value)
+    return pd.read_csv(obj["Body"], sep="\t")
 
 
 if __name__ == "__main__":
