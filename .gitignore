@@ -1,5 +1,5 @@
 # ONLY ignore the data folder at the very top of the project
-#/data/
+/data/
 
 # Keep these to ignore large files elsewhere just in case
 *.csv

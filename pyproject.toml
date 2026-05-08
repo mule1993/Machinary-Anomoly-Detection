@@ -1,0 +1,7 @@
+[tool.ruff]
+# Enable specific rules (Pyflakes, pycodestyle, etc.)
+select = ["E", "F", "I"]
+fix = true
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
