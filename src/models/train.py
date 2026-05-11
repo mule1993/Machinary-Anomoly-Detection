@@ -1,3 +1,4 @@
+from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 
 from src.data.ingest import load_csv_from_s3
@@ -27,7 +28,7 @@ class DummyFailureModel:
 model = DummyFailureModel()
 y_pred = model.predict(X_test)
 
-# print(classification_report(y_test, y_pred))
+print(classification_report(y_test, y_pred, zero_division=0))
 # print(y_test.dtype)
 # print(y_pred.dtype)
 # joblib.dump(model, model_path)
