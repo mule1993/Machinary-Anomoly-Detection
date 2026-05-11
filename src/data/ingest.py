@@ -3,28 +3,24 @@ import os
 import boto3
 import pandas as pd
 
-aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_DEFAULT_REGION = "us - east - 1"
-bucket = "machinery-mlops-muluneh-2026"
-key = "data/raw/ai4i2020.csv"
 
-
-def load_csv_from_s3(
-    bucket, key, aws_access_key_id=None, aws_secret_access_key=None, region_name=None
-):
+# Load CSV data from S3 bucket
+def load_csv_from_s3(aws_access_key_id=None, aws_secret_access_key=None):
     session = boto3.Session(
         aws_access_key_id=aws_access_key_id or os.getenv("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=aws_secret_access_key
         or os.getenv("AWS_SECRET_ACCESS_KEY"),
-        region_name=region_name or os.getenv("AWS_DEFAULT_REGION"),
+        region_name=os.getenv("AWS_REGION", os.getenv("AWS_REGION")),
     )
     s3 = session.client("s3")
-    obj = s3.get_object(Bucket=bucket, Key=key)
+    obj = s3.get_object(
+        Bucket=os.getenv("RAW_DATA_BUCKET"), Key=os.getenv("BUCKET_PATH")
+    )  # noqa: E501
     # Read the CSV file directly from the S3 object(tab-separated value)
     return pd.read_csv(obj["Body"], sep="\t")
 
 
+# Example usage
 if __name__ == "__main__":
-    df = load_csv_from_s3(bucket, key)
+    df = load_csv_from_s3()
     print(df.head())
