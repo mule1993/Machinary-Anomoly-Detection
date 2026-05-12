@@ -91,6 +91,25 @@ def one_hot_encode_types(df):
     return df
 
 
+def preprocess_data():
+    """
+    Preprocess the data by applying all transformations.
+
+    Args:
+        df: Raw DataFrame
+
+    Returns:
+        Preprocessed DataFrame
+    """
+    df = load_csv_from_s3()
+    df = kelvin_to_celsius(df)
+    df = drop_rows_with_negatives(df)
+    df = speed_torque_to_power(df)
+    df = drop_unwanted_columns(df)
+    df = one_hot_encode_types(df)
+    return df
+
+
 if __name__ == "__main__":
     print(df.head())
     celsius_df = kelvin_to_celsius(df)
