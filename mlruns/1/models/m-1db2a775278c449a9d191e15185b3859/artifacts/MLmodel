@@ -1,0 +1,23 @@
+artifact_path: /home/muluneh/Machinary-Anomoly-Detection/mlruns/1/models/m-1db2a775278c449a9d191e15185b3859/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.12.3
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.8.0
+    skops_trusted_types: null
+mlflow_version: 3.12.0
+model_id: m-1db2a775278c449a9d191e15185b3859
+model_size_bytes: 862
+model_uuid: m-1db2a775278c449a9d191e15185b3859
+prompts: null
+run_id: fb9abfe8737747d2abd398cd08273981
+utc_time_created: '2026-05-11 12:18:03.264152'
