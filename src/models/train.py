@@ -6,13 +6,13 @@ import mlflow
 from sklearn.metrics import classification_report, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 
-from src.data.ingest import load_csv_from_s3
+from src.data.preprocess import preprocess_data
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 MODEL_DIR = BASE_DIR / "models"
 
-# Load data from S3
-df = load_csv_from_s3()
+# Load and preprocess data
+df = preprocess_data()
 
 # Prepare data for training
 target_column = "Machine failure"
@@ -36,7 +36,7 @@ class DummyFailureModel:
 mlflow.set_tracking_uri("http://127.0.0.1:5000")
 # AWS: Amazon RDS (Relational Database Service) running PostgreSQL or MySQL.
 # Pmlflow.set_tracking_uri("http://internal-mlflow-load-balancer.aws.com:5000")
-mlflow.set_experiment("Second_Dummy_Model_Experiment")
+mlflow.set_experiment("Processed_Data_Dummy_Model_Experiment")
 
 # Save the model and log it with MLflow
 with mlflow.start_run():
