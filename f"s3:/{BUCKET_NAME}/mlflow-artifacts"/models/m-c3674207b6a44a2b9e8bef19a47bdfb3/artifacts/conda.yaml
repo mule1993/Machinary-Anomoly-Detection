@@ -1,0 +1,10 @@
+channels:
+- conda-forge
+dependencies:
+- python=3.10
+- scikit-learn=1.8.0
+- pip:
+  - mlflow
+  - boto3
+  - s3fs
+name: mlflow_env

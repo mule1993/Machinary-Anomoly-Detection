@@ -1,8 +1,6 @@
 import logging
 import os
-from pathlib import Path
 
-import joblib
 import mlflow
 from sklearn.metrics import classification_report, precision_score, recall_score
 from sklearn.model_selection import train_test_split
@@ -11,10 +9,10 @@ from src.data.ingest import load_csv_from_s3
 from src.models.model_classes import DummyFailureModel
 
 # ================= CONFIGURATION =================
-BUCKET_NAME = os.environ["BUCKET_NAME"]
+# BUCKET_NAME = os.environ["BUCKET_NAME"]
 REGION = os.environ["AWS_REGION"]
 EXPERIMENT_NAME = os.environ["EXPERIMENT_NAME"]
-s3_path = os.environ["S3_PATH"]
+ARTIFACT_PATH = os.environ["ARTIFACT_PATH"]
 # =================================================
 
 # Load and preprocess data
@@ -47,16 +45,17 @@ conda_env = {
 
 # =================================================
 try:
-    mlflow.create_experiment(name=EXPERIMENT_NAME, artifact_location=s3_path)
+    mlflow.create_experiment(name=EXPERIMENT_NAME, artifact_location=ARTIFACT_PATH)
 except Exception:
     pass
 
 mlflow.set_experiment(EXPERIMENT_NAME)
 
+
 # 4. The Run
 with mlflow.start_run():
-    # print(f"Tracking URI: {mlflow.get_tracking_uri()}")
-    # print(f"Artifact URI: {mlflow.get_artifact_uri()}")
+    print(f"Tracking URI: {mlflow.get_tracking_uri()}")
+    print(f"Artifact URI: {mlflow.get_artifact_uri()}")
 
     # Log tags/params
     mlflow.set_tag("model_type", "dummy")
@@ -77,10 +76,10 @@ with mlflow.start_run():
 
 # =================================================
 # Save the model locally
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-MODEL_DIR = BASE_DIR / "models"
-model_path = MODEL_DIR / "DummyFailureModel.joblib"
-joblib.dump(model, model_path)
+# BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# MODEL_DIR = BASE_DIR / "models"
+# model_path = MODEL_DIR / "DummyFailureModel.joblib"
+# joblib.dump(model, model_path)
 
 # =================================================
 # Predict on the test set

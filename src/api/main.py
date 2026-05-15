@@ -1,4 +1,4 @@
-import os  # noqa: I001
+import os
 
 import mlflow.pyfunc
 import pandas as pd
@@ -10,7 +10,7 @@ app = FastAPI()
 
 # 1. Path to your model in S3 (Use the folder path from your MLflow UI)
 MODEL_URI = os.getenv("MODEL_URI")
-
+# MODEL_URI = "s3://machinery-mlops-muluneh-2026/mlflow-artifacts/models/m-7c13b7532ad74f6f95d776a105505dda/artifacts/"
 # 2. Load the model globally so it's fast
 print(f"Loading model from: {MODEL_URI}")
 model = mlflow.pyfunc.load_model(MODEL_URI)
