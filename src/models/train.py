@@ -13,6 +13,7 @@ from src.models.model_classes import DummyFailureModel
 REGION = os.environ["AWS_REGION"]
 EXPERIMENT_NAME = os.environ["EXPERIMENT_NAME"]
 ARTIFACT_PATH = os.environ["ARTIFACT_PATH"]
+alias = os.getenv("MODEL_ALIAS")
 # =================================================
 
 # Load and preprocess data
@@ -51,27 +52,42 @@ except Exception:
 
 mlflow.set_experiment(EXPERIMENT_NAME)
 
+# Define your model name in the registry
+model_name = "failure-prediction-model"
 
 # 4. The Run
-with mlflow.start_run():
+with mlflow.start_run() as run:
+    run_id = run.info.run_id
     print(f"Tracking URI: {mlflow.get_tracking_uri()}")
     print(f"Artifact URI: {mlflow.get_artifact_uri()}")
 
-    # Log tags/params
+    # 1. Standard Tagging/Params
     mlflow.set_tag("model_type", "dummy")
     mlflow.log_param("data_source", "manual_test")
 
     # Initialize model
     model = DummyFailureModel()
 
-    # log model to S3
+    # 2. Log model to S3
+    # 'artifact_path' creates the folder inside the S3 run directory
     mlflow.sklearn.log_model(
         sk_model=model,
         name="model_output",
         serialization_format="pickle",
         conda_env=conda_env,
+        registered_model_name=model_name,  # This automatically registers it
     )
-    print("✅ Success! Model logged to S3.")
+    # 3. Industry Standard: Assign an Alias (e.g., "champion" or "production")
+    client = mlflow.tracking.MlflowClient()
+
+    # Get the latest version we just registered
+    model_version_details = client.get_latest_versions(model_name, stages=["None"])[0]
+
+    # Set the alias so your Docker container knows which version to pull
+    client.set_registered_model_alias(
+        name=model_name, alias=alias, version=model_version_details.version
+    )
+    print(f"✅ Successfully logged run {run_id} and tagged as '{alias}'")
 
 
 # =================================================
