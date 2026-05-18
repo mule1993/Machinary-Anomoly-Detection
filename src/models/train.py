@@ -58,7 +58,7 @@ model_name = "failure-prediction-model"
 # 4. The Run
 with mlflow.start_run() as run:
     run_id = run.info.run_id
-    print(f"Tracking URI: {mlflow.get_tracking_uri()}")
+    # print(f"Tracking URI: {mlflow.get_tracking_uri()}")
     print(f"Artifact URI: {mlflow.get_artifact_uri()}")
 
     # 1. Standard Tagging/Params
