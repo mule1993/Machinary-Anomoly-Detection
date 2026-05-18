@@ -1,0 +1,16 @@
+{
+    "repository": {
+        "repositoryArn": "arn:aws:ecr:us-east-1:457736182931:repository/machinery-prod",
+        "registryId": "457736182931",
+        "repositoryName": "machinery-prod",
+        "repositoryUri": "457736182931.dkr.ecr.us-east-1.amazonaws.com/machinery-prod",
+        "createdAt": "2026-05-18T09:39:29.006000+03:00",
+        "imageTagMutability": "MUTABLE",
+        "imageScanningConfiguration": {
+            "scanOnPush": false
+        },
+        "encryptionConfiguration": {
+            "encryptionType": "AES256"
+        }
+    }
+}

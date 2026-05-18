@@ -45,14 +45,14 @@ conda_env = {
 
 
 # =================================================
+# Set the experiment
 try:
     mlflow.create_experiment(name=EXPERIMENT_NAME, artifact_location=ARTIFACT_PATH)
 except Exception:
     pass
-
 mlflow.set_experiment(EXPERIMENT_NAME)
 
-# Define your model name in the registry
+# Define model name in the registry
 model_name = "failure-prediction-model"
 
 # 4. The Run

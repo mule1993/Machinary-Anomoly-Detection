@@ -1,0 +1,41 @@
+name: Deploy API to AWS ECR
+
+on:
+  push:
+    branches: [ main ]  # Triggers the pipeline every time you push to main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest  # The cloud environment where the build happens
+
+    steps:
+    # 1. Pull down a copy of your source code onto the cloud runner
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # 2. Authenticate with AWS using your secure GitHub Secrets
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1  # Change to your AWS region if different
+
+    # 3. Log the cloud runner's Docker engine into your ECR registry
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    # 4. Build the image on the cloud network and push it to AWS
+    - name: Build, Tag, and Push Image to ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: machinery-prod  # Your ECR repository name
+        IMAGE_TAG: ${{ github.sha }}    # Uses the unique Git Commit hash as the version tag
+      run: |
+        # Build the image using the cloud runner's high-speed network cache
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+        
+        # Push both the unique version tag and the rolling 'latest' tag
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
