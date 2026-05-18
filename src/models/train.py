@@ -62,7 +62,7 @@ with mlflow.start_run() as run:
     print(f"Artifact URI: {mlflow.get_artifact_uri()}")
 
     # 1. Standard Tagging/Params
-    mlflow.set_tag("model_type", "dummy")
+    mlflow.set_tag("model_type", "dummy_classifier")
     mlflow.log_param("data_source", "manual_test")
 
     # Initialize model
