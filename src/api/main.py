@@ -5,13 +5,11 @@ import pandas as pd
 from fastapi import FastAPI
 from mlflow import MlflowClient
 
-from src.models.model_classes import DummyFailureModel  # noqa: F401
-
 app = FastAPI()
 
 # 1. Setup MLflow Connection
 MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "http://172.17.0.1:5000")
-model_name = "failure-prediction-model"  # Use your actual model name
+model_name = "failure-prediction-model"
 
 # 1. Path to your model in S3 (Use the folder path from your MLflow UI)
 MODEL_URI = os.getenv("MODEL_URI")

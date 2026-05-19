@@ -2,11 +2,12 @@ import logging
 import os
 
 import mlflow
+import xgboost as xgb
 from sklearn.metrics import classification_report, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 
 from src.data.ingest import load_csv_from_s3
-from src.models.model_classes import DummyFailureModel
+from src.data.preprocess import build_preprocessor
 
 # ================= CONFIGURATION =================
 # BUCKET_NAME = os.environ["BUCKET_NAME"]
@@ -14,6 +15,8 @@ REGION = os.environ["AWS_REGION"]
 EXPERIMENT_NAME = os.environ["EXPERIMENT_NAME"]
 ARTIFACT_PATH = os.environ["ARTIFACT_PATH"]
 alias = os.getenv("MODEL_ALIAS")
+# Define model name in the registry
+model_name = os.getenv("MODEL_NAME")
 # =================================================
 
 # Load and preprocess data
@@ -24,8 +27,27 @@ y = df[target_column]
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
+preprocessor = build_preprocessor(X_train)
+X_train = preprocessor.fit_transform(X_train)
+X_test = preprocessor.transform(X_test)
 
 
+# =================================================
+# Initialize model
+# model = DummyFailureModel()
+#  Model training
+model = xgb.XGBClassifier(
+    n_estimators=200,
+    max_depth=5,
+    learning_rate=0.05,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    eval_metric="logloss",
+    random_state=42,
+)
+
+# Autolog captures everything during this .fit() call
+model.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=False)
 # =================================================
 
 
@@ -52,8 +74,6 @@ except Exception:
     pass
 mlflow.set_experiment(EXPERIMENT_NAME)
 
-# Define model name in the registry
-model_name = "failure-prediction-model"
 
 # 4. The Run
 with mlflow.start_run() as run:
@@ -64,9 +84,6 @@ with mlflow.start_run() as run:
     # 1. Standard Tagging/Params
     mlflow.set_tag("model_type", "dummy_classifier")
     mlflow.log_param("data_source", "manual_test")
-
-    # Initialize model
-    model = DummyFailureModel()
 
     # 2. Log model to S3
     # 'artifact_path' creates the folder inside the S3 run directory
