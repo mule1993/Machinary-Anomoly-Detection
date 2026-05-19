@@ -20,7 +20,7 @@ model_name = os.getenv("MODEL_NAME")
 # =================================================
 
 # Load and preprocess data
-df = load_csv_from_s3()
+df = load_csv_from_s3(RAW_DATA_PATH=os.getenv("RAW_DATA_PATH"))
 target_column = "Machine failure"
 X = df.drop(target_column, axis=1)
 y = df[target_column]
