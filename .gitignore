@@ -9,6 +9,6 @@
 *.pkl
 
 # Python environment
-venv/
+.venv/
 __pycache__/
 .env
