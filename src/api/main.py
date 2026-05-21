@@ -50,7 +50,7 @@ def status():
 
 @app.get("/")
 def home():
-    return {"status": "Model API is Running"}
+    return {"status": "Model API is Running now"}
 
 
 @app.post("/predict")
@@ -59,3 +59,10 @@ def predict(data: dict):
     df = pd.DataFrame(data["features"])
     prediction = model.predict(df)
     return {"prediction": prediction.tolist()}
+
+
+if __name__ == "__main__":
+    print("Starting ARISE Prediction API...")
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
