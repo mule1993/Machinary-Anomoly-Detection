@@ -1,0 +1,14 @@
+# ONLY ignore the data folder at the very top of the project
+/data/
+
+# Keep these to ignore large files elsewhere just in case
+*.csv
+*.parquet
+*.tar.gz
+*.joblib
+*.pkl
+
+# Python environment
+.venv/
+__pycache__/
+.env
