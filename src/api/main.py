@@ -13,6 +13,7 @@ model_name = os.getenv("MODEL_NAME")
 
 # 1. Path to your model in S3 (Use the folder path from your MLflow UI)
 MODEL_URI = os.getenv("MODEL_URI")
+PREPROCESSOR_URI = os.getenv("PREPROCESSOR_URI")
 MODEL_ALIAS = os.getenv("MODEL_ALIAS")
 # MODEL_URI = "s3://machinery-mlops-muluneh-2026/mlflow-artifacts/models/m-7c13b7532ad74f6f95d776a105505dda/artifacts/"
 
@@ -21,6 +22,7 @@ client = MlflowClient()
 # 2. Load the model globally so it's fast
 print(f"Loading model from: {MODEL_URI}")
 model = mlflow.sklearn.load_model(MODEL_URI)
+preprocessor = mlflow.sklearn.load_model(PREPROCESSOR_URI)
 
 
 def get_model_info():
@@ -56,8 +58,9 @@ def home():
 @app.post("/predict")
 def predict(data: dict):
     # Expecting JSON like: {"features": [[298.1, 308.6, 1500, 40.5, 0]]}
-    df = pd.DataFrame(data["features"])
-    prediction = model.predict(df)
+    df = pd.DataFrame(data)
+    preprocessed_df = preprocessor.transform(df)
+    prediction = model.predict(preprocessed_df)
     return {"prediction": prediction.tolist()}
 
 

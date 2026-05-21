@@ -19,37 +19,6 @@ alias = os.getenv("MODEL_ALIAS")
 model_name = os.getenv("MODEL_NAME")
 # =================================================
 
-# Load and preprocess data
-df = load_csv_from_s3(bucket_key=os.getenv("RAW_DATA_PATH"))
-target_column = "Machine failure"
-X = df.drop(target_column, axis=1)
-y = df[target_column]
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
-preprocessor = build_preprocessor(X_train)
-X_train = preprocessor.fit_transform(X_train)
-X_test = preprocessor.transform(X_test)
-
-
-# =================================================
-# Initialize model
-# model = DummyFailureModel()
-#  Model training
-model = xgb.XGBClassifier(
-    n_estimators=200,
-    max_depth=5,
-    learning_rate=0.05,
-    subsample=0.8,
-    colsample_bytree=0.8,
-    eval_metric="logloss",
-    random_state=42,
-)
-
-# Autolog captures everything during this .fit() call
-model.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=False)
-# =================================================
-
 
 # Silence the specific sklearn flavor logger warning
 logging.getLogger("mlflow.sklearn").setLevel(logging.ERROR)
@@ -85,14 +54,56 @@ with mlflow.start_run() as run:
     mlflow.set_tag("model_type", "dummy_classifier")
     mlflow.log_param("data_source", "manual_test")
 
+    # Load and preprocess data
+    df = load_csv_from_s3(bucket_key=os.getenv("RAW_DATA_PATH"))
+    target_column = "Machine failure"
+    X = df.drop(target_column, axis=1)
+    y = df[target_column]
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+    print("X_test before preprocessing:")
+    print(X_test)
+    preprocessor = build_preprocessor(X_train)
+    raw_input_example = X_train.iloc[[0]].copy()
+    X_train = preprocessor.fit_transform(X_train)
+    X_test = preprocessor.transform(X_test)
+    print("X_test after preprocessing:")
+    print(X_test)
+
+    # =================================================
+    # Initialize model
+    # model = DummyFailureModel()
+    #  Model training
+    model = xgb.XGBClassifier(
+        n_estimators=200,
+        max_depth=5,
+        learning_rate=0.05,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        eval_metric="logloss",
+        random_state=42,
+    )
+
+    # Autolog captures everything during this .fit() call
+    model.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=False)
+    # =================================================
+
     # 2. Log model to S3
     # 'artifact_path' creates the folder inside the S3 run directory
     mlflow.sklearn.log_model(
         sk_model=model,
-        name="model_output",
+        name="model",
         serialization_format="pickle",
         conda_env=conda_env,
         registered_model_name=model_name,  # This automatically registers it
+    )
+    mlflow.sklearn.log_model(
+        sk_model=preprocessor,
+        name="preprocessor",
+        input_example=raw_input_example,
+        # code_path=["src/models/custom_transformers.py"],
+        registered_model_name=model_name,
     )
     # 3. Industry Standard: Assign an Alias (e.g., "champion" or "production")
     client = mlflow.tracking.MlflowClient()
