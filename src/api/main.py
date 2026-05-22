@@ -13,7 +13,7 @@ model_name = os.getenv("MODEL_NAME")
 
 # 1. Path to your model in S3 (Use the folder path from your MLflow UI)
 MODEL_URI = os.getenv("MODEL_URI")
-PREPROCESSOR_URI = os.getenv("PREPROCESSOR_URI")
+# PREPROCESSOR_URI = os.getenv("PREPROCESSOR_URI")
 MODEL_ALIAS = os.getenv("MODEL_ALIAS")
 # MODEL_URI = "s3://machinery-mlops-muluneh-2026/mlflow-artifacts/models/m-7c13b7532ad74f6f95d776a105505dda/artifacts/"
 
@@ -21,8 +21,8 @@ mlflow.set_tracking_uri(MLFLOW_URI)
 client = MlflowClient()
 # 2. Load the model globally so it's fast
 print(f"Loading model from: {MODEL_URI}")
-model = mlflow.sklearn.load_model(MODEL_URI)
-preprocessor = mlflow.sklearn.load_model(PREPROCESSOR_URI)
+pipeline = mlflow.pyfunc.load_model(MODEL_URI)
+# preprocessor = mlflow.sklearn.load_model(PREPROCESSOR_URI)
 
 
 def get_model_info():
@@ -62,15 +62,15 @@ def predict(data: dict):
 
     # 2. Extract the exact column sequence your ColumnTransformer requires
     # (Scikit-Learn stores this internal mapping inside 'feature_names_in_')
-    expected_columns = preprocessor.feature_names_in_
+    expected_columns = pipeline._model_impl.python_model.expected_features
 
     # 3. Re-index your dataframe to match that exact footprint.
     # Any missing columns (like your training target label) will
     # be safely filled with 0 or NaN
     final_df = raw_df.reindex(columns=expected_columns, fill_value=0)
-    preprocessed_df = preprocessor.transform(final_df)
-    prediction = model.predict(preprocessed_df)
-    return {"prediction": prediction.tolist()}
+    # preprocessed_df = preprocessor.transform(final_df)
+    prediction = pipeline.predict(final_df)
+    return {"prediction": prediction.tolist()[0], "status": "success"}
 
 
 if __name__ == "__main__":
