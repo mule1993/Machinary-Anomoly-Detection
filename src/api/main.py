@@ -57,9 +57,18 @@ def home():
 
 @app.post("/predict")
 def predict(data: dict):
-    # Expecting JSON like: {"features": [[298.1, 308.6, 1500, 40.5, 0]]}
-    df = pd.DataFrame(data)
-    preprocessed_df = preprocessor.transform(df)
+    # 1. Convert incoming JSON dictionary to a baseline DataFrame
+    raw_df = pd.DataFrame([data])
+
+    # 2. Extract the exact column sequence your ColumnTransformer requires
+    # (Scikit-Learn stores this internal mapping inside 'feature_names_in_')
+    expected_columns = preprocessor.feature_names_in_
+
+    # 3. Re-index your dataframe to match that exact footprint.
+    # Any missing columns (like your training target label) will
+    # be safely filled with 0 or NaN
+    final_df = raw_df.reindex(columns=expected_columns, fill_value=0)
+    preprocessed_df = preprocessor.transform(final_df)
     prediction = model.predict(preprocessed_df)
     return {"prediction": prediction.tolist()}
 

@@ -65,7 +65,7 @@ with mlflow.start_run() as run:
     print("X_test before preprocessing:")
     print(X_test)
     preprocessor = build_preprocessor(X_train)
-    raw_input_example = X_train.iloc[[0]].copy()
+    raw_input_example = X_test.iloc[[0]].copy()
     X_train = preprocessor.fit_transform(X_train)
     X_test = preprocessor.transform(X_test)
     print("X_test after preprocessing:")
@@ -98,13 +98,6 @@ with mlflow.start_run() as run:
         conda_env=conda_env,
         registered_model_name=model_name,  # This automatically registers it
     )
-    mlflow.sklearn.log_model(
-        sk_model=preprocessor,
-        name="preprocessor",
-        input_example=raw_input_example,
-        # code_path=["src/models/custom_transformers.py"],
-        registered_model_name=model_name,
-    )
     # 3. Industry Standard: Assign an Alias (e.g., "champion" or "production")
     client = mlflow.tracking.MlflowClient()
 
@@ -115,6 +108,15 @@ with mlflow.start_run() as run:
     client.set_registered_model_alias(
         name=model_name, alias=alias, version=model_version_details.version
     )
+    # log the preprocessor as well so it's available for the API to load and use
+    mlflow.sklearn.log_model(
+        sk_model=preprocessor,
+        name="preprocessor",
+        input_example=raw_input_example,
+        # code_path=["src/models/custom_transformers.py"],
+        registered_model_name=model_name,
+    )
+
     print(f"✅ Successfully logged run {run_id} and tagged as '{alias}'")
 
 

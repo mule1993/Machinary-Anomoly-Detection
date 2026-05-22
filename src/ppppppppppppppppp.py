@@ -1,3 +1,10 @@
-# 1. Force the environment to use the correct S3 endpoint
-# os.environ["AWS_DEFAULT_REGION"] = REGION
-# os.environ["MLFLOW_S3_ENDPOINT_URL"] = f"https://s3.{REGION}.amazonaws.com"
+from mlflow.tracking import MlflowClient
+
+client = MlflowClient()
+model_name = "xgboost-failure-prediction-model"  # Put your exact $MODEL_NAME here
+
+# Fetch the version assigned to your alias
+version_details = client.get_model_version_by_alias(model_name, "production")
+
+print(f"[*] Alias '@production' is pointing to Version: {version_details.version}")
+print(f"[*] Source S3 Path: {version_details.source}")
