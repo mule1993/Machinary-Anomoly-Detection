@@ -4,8 +4,14 @@ import hydra
 import mlflow
 import xgboost as xgb
 from dotenv import load_dotenv
+from mlflow.models import infer_signature
 from omegaconf import DictConfig
-from sklearn.metrics import classification_report, precision_score, recall_score
+from sklearn.metrics import (
+    classification_report,
+    f1_score,
+    precision_score,
+    recall_score,
+)
 from sklearn.model_selection import train_test_split
 
 from src.data.ingest import load_csv_from_s3
@@ -16,7 +22,7 @@ from src.models.StreamedPipelineWrapper import StreamedPipelineWrapper
 load_dotenv()  # Load environment variables from .env file
 # BUCKET_NAME = os.environ["BUCKET_NAME"]
 REGION = os.environ["AWS_REGION"]
-EXPERIMENT_NAME = os.environ["EXPERIMENT_NAME"]
+# EXPERIMENT_NAME = os.environ["EXPERIMENT_NAME"]
 # alias = os.getenv("MODEL_ALIAS")
 # Define model name in the registry
 # model_name = os.getenv("MODEL_NAME")
@@ -51,7 +57,7 @@ def train_pipeline(config: DictConfig):
     mlflow.set_experiment(config.experiment_name)
 
     # 4. The Run
-    with mlflow.start_run() as run:
+    with mlflow.start_run(run_name=config.model_run_name) as run:
         run_id = run.info.run_id
         print(f"Tracking URI: {mlflow.get_tracking_uri()}")
         print(f"Artifact URI: {mlflow.get_artifact_uri()}")
@@ -77,13 +83,12 @@ def train_pipeline(config: DictConfig):
         # print(X_test)
 
         # =================================================
+        # Model training
         # Initialize model
         # model = DummyFailureModel()
-        #  Model training
         model = xgb.XGBClassifier(**config["hyperparameters"])
 
         model.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=False)
-
         # =================================================
         """# log the preprocessor separately
         mlflow.sklearn.log_model(
@@ -103,34 +108,40 @@ def train_pipeline(config: DictConfig):
         registered_model_name=model_name,  # This automatically registers it
         )"""
 
+        # Predict on the test set
+
+        y_pred = model.predict(X_test)
+        precision = precision_score(y_test, y_pred, average="macro", zero_division=0)
+        recall = recall_score(y_test, y_pred, average="macro", zero_division=0)
+        f1 = f1_score(y_test, y_pred, average="macro", zero_division=0)
+
+        # Logging evaluation metrics to MLflow
+        mlflow.log_metric("precision", precision)
+        mlflow.log_metric("recall", recall)
+        mlflow.log_metric("f1", f1)
+
         # 3. Stream the objects directly into your custom wrapper in-memory
         unified_pipeline = StreamedPipelineWrapper(
             preprocessor=preprocessor, model=model
         )
-
+        signature = infer_signature(X_test, y_pred)
         model_info = mlflow.pyfunc.log_model(
             name="model",
             python_model=unified_pipeline,
+            input_example=X_test[:3],
+            signature=signature,
             registered_model_name=config.model_name,
         )
-        # Assigning an Alias ("champion" or "production")
+
         client = mlflow.tracking.MlflowClient()
-        client.set_registered_model_alias(
+        # Adding a metadata description tag for team governance audit logs
+        client.update_model_version(
             name=config.model_name,
-            alias=config.alias,
             version=model_info.registered_model_version,
+            description=config.model_description,
         )
+        print(f"✅ Successfully logged run {run_id}")
 
-        print(f"✅ Successfully logged run {run_id} and tagged as '{config.alias}'")
-
-        # Predict on the test set
-
-    y_pred = model.predict(X_test)
-    precision = precision_score(y_test, y_pred, average="macro", zero_division=0)
-    recall = recall_score(y_test, y_pred, average="macro", zero_division=0)
-    # Logging evaluation metrics to MLflow
-    mlflow.log_metric("precision", precision)
-    mlflow.log_metric("recall", recall)
     # =================================================
     # Evaluate the model
     print(classification_report(y_test, y_pred, zero_division=0))
@@ -141,6 +152,7 @@ def train_pipeline(config: DictConfig):
     print(
         f"Recall: {recall_score(y_test, y_pred, average='macro', zero_division=0):.4f}"
     )
+    print(f"F1-Score: {f1_score(y_test, y_pred, average='macro', zero_division=0):.4f}")
 
     # =================================================
 
