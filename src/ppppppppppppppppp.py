@@ -19,7 +19,8 @@ import mlflow
 from mlflow.tracking import MlflowClient
 
 # 1. Point to your tracking server URI
-TRACKING_URI = "http://localhost:5000"  # http://172.17.0.1:5000
+TRACKING_URI = "http://localhost:5000"
+
 mlflow.set_tracking_uri(TRACKING_URI)
 client = MlflowClient()
 
