@@ -4,7 +4,6 @@ import hydra
 import mlflow
 import xgboost as xgb
 from dotenv import load_dotenv
-from mlflow.models import infer_signature
 from omegaconf import DictConfig
 from sklearn.metrics import (
     classification_report,
@@ -124,12 +123,12 @@ def train_pipeline(config: DictConfig):
         unified_pipeline = StreamedPipelineWrapper(
             preprocessor=preprocessor, model=model
         )
-        signature = infer_signature(X_test, y_pred)
+        # signature = infer_signature(X_test, y_pred)
         model_info = mlflow.pyfunc.log_model(
             name="model",
             python_model=unified_pipeline,
-            input_example=X_test[:3],
-            signature=signature,
+            # input_example=raw_input_example,
+            # signature=signature,
             registered_model_name=config.model_name,
         )
 

@@ -8,7 +8,7 @@ from mlflow import MlflowClient
 app = FastAPI()
 
 # 1. Setup MLflow Connection
-MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "http://172.17.0.1:5000")
+MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI")
 model_name = os.getenv("MODEL_NAME")
 
 # 1. Path to your model in S3 (Use the folder path from your MLflow UI)
@@ -47,6 +47,9 @@ def status():
         "model_version": info["version"],  # <--- This shows '1', '2', etc.
         "model_alias": MODEL_ALIAS,
         "mlflow_run_id": info["run_id"],
+        "model_description": client.get_model_version(
+            name=model_name, version=info["version"]
+        ).description,
     }
 
 
@@ -70,7 +73,11 @@ def predict(data: dict):
     final_df = raw_df.reindex(columns=expected_columns, fill_value=0)
     # preprocessed_df = preprocessor.transform(final_df)
     prediction = pipeline.predict(final_df)
-    return {"prediction": prediction.tolist()[0], "status": "success"}
+    return {
+        "prediction": prediction.tolist()[0],
+        "status": "success",
+        "type": str(type(prediction)),
+    }
 
 
 if __name__ == "__main__":
