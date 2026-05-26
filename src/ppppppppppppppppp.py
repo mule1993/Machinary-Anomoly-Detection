@@ -14,7 +14,7 @@ print(f"[*] Alias '@{alias_name}' is pointing to Version: {version_details.versi
 print(f"[*] Source S3 Path: {version_details.source}")"""
 
 # This script is a utility to clean up all registered models and experiments from
-# an MLflow tracking server.
+# an MLflow tracking server
 import mlflow
 from mlflow.tracking import MlflowClient
 
@@ -23,7 +23,7 @@ TRACKING_URI = "http://localhost:5000"  # http://172.17.0.1:5000
 mlflow.set_tracking_uri(TRACKING_URI)
 client = MlflowClient()
 
-print("--- Starting MLflow Deep Clean ---")
+print("---Starting MLflow Deep Clean---")
 
 # ==========================================
 # 1. DELETE ALL REGISTERED MODELS
