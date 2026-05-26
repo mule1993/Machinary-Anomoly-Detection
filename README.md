@@ -1,2 +1,1 @@
-
 # Machinary-Anomoly-Detection
