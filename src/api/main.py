@@ -10,9 +10,9 @@ app = FastAPI()
 # 1. Setup MLflow Connection
 MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI")
 model_name = os.getenv("MODEL_NAME")
-
+model_alias = os.getenv("MODEL_ALIAS")
 # 1. Path to your model in S3 (Use the folder path from your MLflow UI)
-MODEL_URI = os.getenv("MODEL_URI")
+MODEL_URI = f"models:/{model_name}@{model_alias}"
 # PREPROCESSOR_URI = os.getenv("PREPROCESSOR_URI")
 MODEL_ALIAS = os.getenv("MODEL_ALIAS")
 # MODEL_URI = "s3://machinery-mlops-muluneh-2026/mlflow-artifacts/models/m-7c13b7532ad74f6f95d776a105505dda/artifacts/"
