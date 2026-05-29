@@ -1,0 +1,5 @@
+pytest==8.1.1
+pytest-mock==3.14.0
+pandas==2.2.1
+numpy==1.26.4
+# Add data validation tools here later (e.g., great-expectations or pydantic)
