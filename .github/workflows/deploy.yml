@@ -11,36 +11,26 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 1. Temporarily disable the action-level cache line to force a fresh build
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    # 2. Force pip to fetch fresh wheels directly from the server
+    # The working, un-cached dependency step we verified!
     - name: Install Dependencies
       run: |
         python3 -m pip install --upgrade pip
         if [ -f requirements.txt ]; then python3 -m pip install --no-cache-dir -r requirements.txt; fi
         if [ -f requirements-dev.txt ]; then python3 -m pip install --no-cache-dir -r requirements-dev.txt; fi
-        # Force a pristine resolution of multimethod
         python3 -m pip install --no-cache-dir --upgrade multimethod pandera
 
-    # 3. Run Code Unit Tests
-    - name: Run Code Unit Tests
+    # Consolidated Step: Run both 'unit' and 'data' tests together
+    - name: Run Complete Test Suite
       env:
         PYTHONPATH: .
         PYTHONNOUSERSITE: "1"
       run: |
-        python3 -s -m pytest -m unit -v
-
-    # 4. Run Data Schema Tests
-    - name: Run Data Schema Tests
-      env:
-        PYTHONPATH: .
-        PYTHONNOUSERSITE: "1"
-      run: |
-        python3 -s -m pytest -m data -v
+        python3 -s -m pytest -m "unit or data" -v
         
   build-and-push:
     runs-on: ubuntu-latest  # The cloud environment where the build happens
