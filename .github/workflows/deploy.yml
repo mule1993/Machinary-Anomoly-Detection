@@ -8,36 +8,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Check out the repository code
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 2. Set up a clean Python environment
+    # 1. Setup isolated environment
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-        cache: 'pip' # Automatically caches pip dependencies to speed up future runs
+        cache: 'pip'
 
-    # 3. Upgrade pip and install all project dependencies
+    # 2. Correctly formatted dependency installation block
     - name: Install Dependencies
       run: |
         python3 -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then python3 pip install -r requirements.txt; fi
-        if [ -f requirements-dev.txt ]; then python3 pip install -r requirements-dev.txt; fi
+        if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
+        if [ -f requirements-dev.txt ]; then python3 -m pip install -r requirements-dev.txt; fi
 
-    # 4. Run fast Code Unit Tests
+    # 3. Run Code Unit Tests
     - name: Run Code Unit Tests
       env:
         PYTHONPATH: .
-        PYTHONNOUSERSITE: "1" # Force Python to completely ignore ~/.local packages
+        PYTHONNOUSERSITE: "1"
       run: |
-        python3 -m pytest -m unit -v
+        python3 -s -m pytest -m unit -v
 
-    # 5. Run Vectorized Data Schema Tests
+    # 4. Run Data Schema Tests
     - name: Run Data Schema Tests
+      env:
+        PYTHONPATH: .
+        PYTHONNOUSERSITE: "1"
       run: |
-        python3 -m pytest -m data -v
+        python3 -s -m pytest -m data -v
         
   build-and-push:
     runs-on: ubuntu-latest  # The cloud environment where the build happens
