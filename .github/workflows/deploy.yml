@@ -34,7 +34,8 @@ jobs:
         
   build-and-push:
     runs-on: ubuntu-latest  # The cloud environment where the build happens
-
+    needs: test-suite
+    
     steps:
     # 1. Pull down a copy of your source code onto the cloud runner
     - name: Checkout Code
