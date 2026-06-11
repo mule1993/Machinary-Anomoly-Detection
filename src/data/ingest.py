@@ -2,14 +2,20 @@ import os
 
 import boto3
 import pandas as pd
+import pandera as pa
+import pandera.typing as pat
+
+from src.data.data_validation import IngestedMachineSchema
 
 # from src.data.preprocess import build_preprocessor
 
 
-# Load CSV data from S3 bucket
-def load_csv_from_s3(
+# The decorator intercepts the return value and validates it against the type hint
+@pa.check_types(lazy=True)
+def load_csv_from_s3_and_validate(
     aws_access_key_id=None, aws_secret_access_key=None, bucket_key=None
-):
+) -> pat.DataFrame[IngestedMachineSchema]:
+
     session = boto3.Session(
         aws_access_key_id=aws_access_key_id or os.getenv("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=aws_secret_access_key
@@ -17,8 +23,9 @@ def load_csv_from_s3(
         region_name=os.getenv("AWS_REGION"),
     )
     s3 = session.client("s3")
-    obj = s3.get_object(Bucket=os.getenv("BUCKET_NAME"), Key=bucket_key)  # noqa: E501
-    # Read the CSV file directly from the S3 object(tab-separated value)
+    obj = s3.get_object(Bucket=os.getenv("BUCKET_NAME"), Key=bucket_key)
+
+    # Read the TSV/CSV stream
     return pd.read_csv(obj["Body"], sep="\t")
 
 

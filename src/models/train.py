@@ -13,8 +13,9 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 
-from src.data.ingest import load_csv_from_s3
+from src.data.ingest import load_csv_from_s3_and_validate
 from src.data.preprocess import build_preprocessor
+from src.data.schemas import MachineFeaturesSchema
 from src.models.StreamedPipelineWrapper import StreamedPipelineWrapper
 
 # ================= CONFIGURATION =================
@@ -67,17 +68,20 @@ def train_pipeline(config: DictConfig):
         mlflow.log_param("test_size", config["data"]["test_size"])
 
         # Load and preprocess data
-        df = load_csv_from_s3(bucket_key=os.getenv("RAW_DATA_PATH"))
+        df = load_csv_from_s3_and_validate(bucket_key=os.getenv("RAW_DATA_PATH"))
         target_column = "Machine failure"
         X = df.drop(target_column, axis=1)
         y = df[target_column]
-        X_train, X_test, y_train, y_test = train_test_split(X, y, **config["data"])
+        X_train, X_test_, y_train, y_test = train_test_split(X, y, **config["data"])
         # print("X_test before preprocessing:")
         # print(X_test)
         preprocessor = build_preprocessor(X_train)
         # raw_input_example = X_test.iloc[[0]].copy()
         X_train = preprocessor.fit_transform(X_train)
+        # Enforce vectorized schema check on evaluation split
+        X_test = MachineFeaturesSchema.validate(X_test_, lazy=True)
         X_test = preprocessor.transform(X_test)
+
         # print("X_test after preprocessing:")
         # print(X_test)
 
@@ -98,7 +102,8 @@ def train_pipeline(config: DictConfig):
         registered_model_name=model_name,
         )
 
-        #  Log model to S3 separetely so we can reuse it in API without the wrapper overhead
+        #  Log model to S3 separetely so we can 
+        # reuse it in API without the wrapper overhead
         mlflow.sklearn.log_model(
         sk_model=model,
         name="model_module",

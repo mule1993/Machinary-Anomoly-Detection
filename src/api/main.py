@@ -1,9 +1,13 @@
 import os
+from typing import List
 
 import mlflow.sklearn
 import pandas as pd
-from fastapi import FastAPI
+import pandera as pa
+from fastapi import FastAPI, HTTPException
 from mlflow import MlflowClient
+
+from src.data.schemas import MachineFeaturesSchema, MachineInferencePayload
 
 app = FastAPI()
 
@@ -28,7 +32,7 @@ pipeline = mlflow.pyfunc.load_model(MODEL_URI)
 def get_model_info():
     try:
         # Resolve the alias to get the specific version metadata
-        model_data = client.get_model_version_by_alias(model_name, MODEL_ALIAS)
+        model_data = client.get_model_version_by_alias(model_name, model_alias)
         return {
             "version": model_data.version,
             "run_id": model_data.run_id,
@@ -59,22 +63,39 @@ def home():
 
 
 @app.post("/predict")
-def predict(data: dict):
-    # 1. Convert incoming JSON dictionary to a baseline DataFrame
-    raw_df = pd.DataFrame([data])
+async def predict_maintenance(payload: List[MachineInferencePayload]):
+    # 1. Structural Validation (FastAPI + Pydantic step completed implicitly on entry)
+    # Convert list of Pydantic models back to standard dictionaries maintaining
+    #  JSON naming
+    raw_records = [record.model_dump(by_alias=True) for record in payload]
+    df = pd.DataFrame(raw_records)
 
-    # 2. Extract the exact column sequence your ColumnTransformer requires
-    # (Scikit-Learn stores this internal mapping inside 'feature_names_in_')
-    expected_columns = pipeline._model_impl.python_model.expected_features
+    # 2. Value Range and Feature Integrity Validation (Pandera Step)
+    try:
+        validated_df = MachineFeaturesSchema.validate(df, lazy=True)
+    except pa.errors.SchemaErrors as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Data values failed operational validation bounds.",
+                "failures": exc.failure_cases[
+                    ["column", "check", "failure_case"]
+                ].to_dict(orient="records"),
+            },
+        )
 
-    # 3. Re-index your dataframe to match that exact footprint.
-    # Any missing columns (like your training target label) will
-    # be safely filled with 0 or NaN
-    final_df = raw_df.reindex(columns=expected_columns, fill_value=0)
-    # preprocessed_df = preprocessor.transform(final_df)
-    prediction = pipeline.predict(final_df)
+    # 3. Model Inference
+    prediction = pipeline.predict(validated_df)
+
+    # --- THE FIX ---
+    # Convert numpy array / pandas series safely to native Python types
+    if hasattr(prediction, "tolist"):
+        serializable_prediction = prediction.tolist()
+    else:
+        serializable_prediction = list(prediction)
+
     return {
-        "prediction": prediction.tolist()[0],
+        "prediction": serializable_prediction,
         "status": "success",
         "type": str(type(prediction)),
     }
