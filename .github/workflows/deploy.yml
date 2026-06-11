@@ -22,12 +22,14 @@ jobs:
     # 3. Upgrade pip and install all project dependencies
     - name: Install Dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade multimethod
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
     # 4. Run fast Code Unit Tests
     - name: Run Code Unit Tests
+      env:
+        PYTHONPATH: .
       run: |
         pytest -m unit -v
 
