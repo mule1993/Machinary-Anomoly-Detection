@@ -11,19 +11,21 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 1. Setup isolated environment
+    # 1. Enforce our managed Python 3.11 tool cache
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
         cache: 'pip'
 
-    # 2. Correctly formatted dependency installation block
+    # 2. Install and force override version resolution conflicts
     - name: Install Dependencies
       run: |
         python3 -m pip install --upgrade pip
         if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
         if [ -f requirements-dev.txt ]; then python3 -m pip install -r requirements-dev.txt; fi
+        # Fix: Force upgrade multimethod last to override any old versions pinned in requirements
+        python3 -m pip install --upgrade multimethod
 
     # 3. Run Code Unit Tests
     - name: Run Code Unit Tests
