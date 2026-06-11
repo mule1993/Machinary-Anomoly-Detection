@@ -30,6 +30,7 @@ jobs:
     - name: Run Code Unit Tests
       env:
         PYTHONPATH: .
+        PYTHONNOUSERSITE: "1" # Force Python to completely ignore ~/.local packages
       run: |
         python -m pytest -m unit -v
 
