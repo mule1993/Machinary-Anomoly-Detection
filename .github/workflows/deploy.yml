@@ -16,15 +16,15 @@ jobs:
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
       with:
-        python-python-version: '3.11'
+        python-version: '3.11'
         cache: 'pip' # Automatically caches pip dependencies to speed up future runs
 
     # 3. Upgrade pip and install all project dependencies
     - name: Install Dependencies
       run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+        python3 -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then python3 pip install -r requirements.txt; fi
+        if [ -f requirements-dev.txt ]; then python3 pip install -r requirements-dev.txt; fi
 
     # 4. Run fast Code Unit Tests
     - name: Run Code Unit Tests
@@ -32,12 +32,12 @@ jobs:
         PYTHONPATH: .
         PYTHONNOUSERSITE: "1" # Force Python to completely ignore ~/.local packages
       run: |
-        python -m pytest -m unit -v
+        python3 -m pytest -m unit -v
 
     # 5. Run Vectorized Data Schema Tests
     - name: Run Data Schema Tests
       run: |
-        python -m pytest -m data -v
+        python3 -m pytest -m data -v
         
   build-and-push:
     runs-on: ubuntu-latest  # The cloud environment where the build happens
