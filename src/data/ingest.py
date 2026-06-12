@@ -1,3 +1,4 @@
+import json
 import os
 
 import boto3
@@ -59,3 +60,64 @@ def upload_csv_to_s3(df, key=None, aws_access_key_id=None, aws_secret_access_key
     # feature_names = preprocessor.get_feature_names_out()
     # df_processed = pd.DataFrame(X_train, columns=feature_names)
     # upload_csv_to_s3(df_processed)
+
+
+def upload_payload_to_s3(
+    payload_dict: dict,
+    prediction_id: str,
+    key=None,
+    aws_access_key_id=None,
+    aws_secret_access_key=None,
+):
+    session = boto3.Session(
+        aws_access_key_id=aws_access_key_id or os.getenv("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=aws_secret_access_key
+        or os.getenv("AWS_SECRET_ACCESS_KEY"),
+        region_name=os.getenv("AWS_REGION", os.getenv("AWS_REGION")),
+    )
+    """
+    Asynchronously uploads the inference and prediction payload to S3.
+    """
+    # now = datetime.now(datetime.timezone.utc)
+
+    s3 = session.client("s3")
+    # Construct a time-partitioned S3 key prefix
+    # Format: inference_logs/year=YYYY/month=MM/day=DD/pred_UUID.json
+    s3_key = (
+        f"inference_logs/"
+        # f"year={now.strftime('%Y')}/"
+        # f"month={now.strftime('%m')}/"
+        # f"day={now.strftime('%d')}/"
+        f"pred_{prediction_id}.json"
+    )
+
+    try:
+        # --- SANITIZATION STEP ---
+        # If 'features' is a pandas DataFrame, convert it to a serializable list of dicts
+        if isinstance(payload_dict.get("features"), pd.DataFrame):
+            # orient="records" turns the rows into a clean list of dictionaries
+            payload_dict["features"] = payload_dict["features"].to_dict(
+                orient="records"
+            )
+
+        # If your prediction or probability are NumPy types (e.g., np.int64 or np.float32),
+        # casting the entire dict values via a safe encoder or explicit conversion is necessary:
+        if hasattr(payload_dict.get("prediction"), "item"):
+            payload_dict["prediction"] = payload_dict["prediction"].item()
+        if hasattr(payload_dict.get("probability"), "item"):
+            payload_dict["probability"] = payload_dict["probability"].item()
+        # Convert dictionary to stringified JSON
+        json_data = json.dumps(payload_dict)
+
+        # Upload object to S3
+        s3.put_object(
+            Bucket=os.getenv("BUCKET_NAME"),
+            Key=s3_key,
+            Body=json_data,
+            ContentType="application/json",
+        )
+    except Exception as e:
+        # Crucial: Log failures to stdout/stderr or CloudWatch logs.
+        # Do not raise an HTTP exception here, as
+        #  the user already received their response!
+        print(f"ERROR: Failed to log payload {prediction_id} to S3: {str(e)}")

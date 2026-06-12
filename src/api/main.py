@@ -1,12 +1,14 @@
 import os
+import uuid
 from typing import List
 
 import mlflow.sklearn
 import pandas as pd
 import pandera as pa
-from fastapi import FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from mlflow import MlflowClient
 
+from src.data.ingest import upload_payload_to_s3
 from src.data.schemas import MachineFeaturesSchema, MachineInferencePayload
 
 app = FastAPI()
@@ -63,7 +65,11 @@ def home():
 
 
 @app.post("/predict")
-async def predict_maintenance(payload: List[MachineInferencePayload]):
+async def predict_maintenance(
+    payload: List[MachineInferencePayload], background_tasks: BackgroundTasks
+):
+    prediction_id = str(uuid.uuid4())
+    # timestamp = datetime.now(datetime.timezone.utc).isoformat() + "Z"
     # 1. Structural Validation (FastAPI + Pydantic step completed implicitly on entry)
     # Convert list of Pydantic models back to standard dictionaries maintaining
     #  JSON naming
@@ -87,14 +93,27 @@ async def predict_maintenance(payload: List[MachineInferencePayload]):
     # 3. Model Inference
     prediction = pipeline.predict(validated_df)
 
-    # --- THE FIX ---
     # Convert numpy array / pandas series safely to native Python types
     if hasattr(prediction, "tolist"):
         serializable_prediction = prediction.tolist()
     else:
         serializable_prediction = list(prediction)
 
+    # 4. Asynchronously log the inference payload and prediction to S3
+    info = get_model_info()
+    logging_document = {
+        "prediction_id": prediction_id,
+        # "timestamp": timestamp,
+        "model_version": info["version"],
+        "features": validated_df,
+        "prediction": serializable_prediction,
+    }
+
+    # Schedule the S3 upload to run in the background after the response is sent
+    background_tasks.add_task(upload_payload_to_s3, logging_document, prediction_id)
+
     return {
+        "prediction_id": prediction_id,
         "prediction": serializable_prediction,
         "status": "success",
         "type": str(type(prediction)),
