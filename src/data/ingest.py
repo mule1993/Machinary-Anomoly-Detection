@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timezone
 
 import boto3
 import pandas as pd
@@ -78,16 +79,24 @@ def upload_payload_to_s3(
     """
     Asynchronously uploads the inference and prediction payload to S3.
     """
-    # now = datetime.now(datetime.timezone.utc)
+    # 1. Generate the authoritative current UTC time (Python 3.12+ standard)
+    now = datetime.now(timezone.utc)
+
+    # Convert to ISO 8601 string format (e.g., "2026-06-15T12:15:30.123456+00:00")
+    # We strip the "+00:00" and append "Z" to keep the naming clean and standardized
+    timestamp_str = now.isoformat().replace("+00:00", "Z")
+
+    # 2. Inject the timestamp directly into the payload body
+    payload_dict["timestamp"] = timestamp_str
 
     s3 = session.client("s3")
     # Construct a time-partitioned S3 key prefix
     # Format: inference_logs/year=YYYY/month=MM/day=DD/pred_UUID.json
     s3_key = (
         f"inference_logs/"
-        # f"year={now.strftime('%Y')}/"
-        # f"month={now.strftime('%m')}/"
-        # f"day={now.strftime('%d')}/"
+        f"year={now.strftime('%Y')}/"
+        f"month={now.strftime('%m')}/"
+        f"day={now.strftime('%d')}/"
         f"pred_{prediction_id}.json"
     )
 
