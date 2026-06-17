@@ -23,24 +23,30 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 3. Pull and run your processing pipeline directly inside the container
+     # 3. Pull and run your processing pipeline directly inside the container
       - name: Pull and Execute Retraining Container
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: "machinery-prod"
+          ECR_REPOSITORY: "machinery-prod" # Matches your EC2 repository name
           IMAGE_TAG: "latest"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+          MODEL_NAME: "machinery_failure_anomaly_detector" # Replace with your real model name config
+          MODEL_ALIAS: "production"                    # Replace with your real alias config
+          BUCKET_NAME: "machinery-mlops-muluneh-2026"
         run: |
           # Pull the production image from ECR
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           
-          # Run the container, passing down your MLOps credentials as runtime variables
+          # Run in the foreground (no -d) and pass all required variables
           docker run --rm \
             -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
             -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
-            -e MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI \
             -e AWS_DEFAULT_REGION=us-east-1 \
+            -e MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI \
+            -e MODEL_NAME=$MODEL_NAME \
+            -e MODEL_ALIAS=$MODEL_ALIAS \
+            -e BUCKET_NAME=$BUCKET_NAME \
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             sh -c "python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
