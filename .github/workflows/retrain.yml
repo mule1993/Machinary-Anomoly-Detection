@@ -31,7 +31,7 @@ jobs:
       image: "${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/machinery-anomaly-detection:latest"
       credentials:
         username: AWS  # AWS ECR username is always literally 'AWS'
-        password: ${{ needs.get-token.outputs.ecr_token }} # Read token from Job 1
+        password: "${{ needs.get-token.outputs.ecr_token }}" # Wrapped in quotes
 
     steps:
       - name: Run Complete Pipeline Chain
