@@ -1,7 +1,10 @@
 import os
 
 import mlflow
+from dotenv import load_dotenv
 from mlflow.tracking import MlflowClient
+
+load_dotenv()
 
 TRACKING_URI = os.environ["MLFLOW_TRACKING_URI"]
 MODEL_NAME = os.environ["MODEL_NAME"]

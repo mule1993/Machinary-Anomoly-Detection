@@ -6,7 +6,10 @@ from io import StringIO
 import boto3
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
 from sklearn.metrics import classification_report
+
+load_dotenv()
 
 S3_BUCKET_NAME = os.getenv("BUCKET_NAME")
 s3_client = boto3.client("s3")

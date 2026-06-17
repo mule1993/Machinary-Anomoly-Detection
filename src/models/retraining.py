@@ -1,17 +1,31 @@
 import os
+import sys
+from pathlib import Path
 
 import hydra
+from dotenv import load_dotenv
 from omegaconf import DictConfig, OmegaConf
 from sklearn.metrics import classification_report
 
 # Import the bulletproof extraction and join functions from your previous script
-from src.evaluate_inference_performance import (
+# 1. Dynamically locate the absolute path of the project root
+# (Steps up two levels from src/models/retraining.py to reach the repo root)
+project_root = str(Path(__file__).resolve().parents[2])
+
+# 2. Inject it into the Python path if it isn't already there
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Now your existing absolute imports will work flawlessly anywhere!
+from src.evaluate_inference_performance import (  # noqa: E402
     extract_scalar_value,
     fetch_and_join_datasets,
 )
-from src.models.train import train_pipeline
+from src.models.train import train_pipeline  # noqa: E402
 
 # =================== RETRAINING CONFIGURATION =================
+
+load_dotenv()
 # Define thresholds for your system
 MINIMUM_SUPPORT_TO_RETRAIN = 10  # Don't retrain on tiny samples
 F1_THRESHOLD = 0.81  # Retrain if model performance falls below this

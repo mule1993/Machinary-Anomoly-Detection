@@ -6,7 +6,9 @@ from io import StringIO
 
 import boto3
 import pandas as pd
+from dotenv import load_dotenv
 
+load_dotenv()
 S3_BUCKET_NAME = os.getenv("BUCKET_NAME")  # Ensure this is set in your .env file
 s3_client = boto3.client("s3")
 
