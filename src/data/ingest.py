@@ -1,3 +1,4 @@
+import io
 import json
 import os
 from datetime import datetime, timezone
@@ -28,7 +29,9 @@ def load_csv_from_s3_and_validate(
     obj = s3.get_object(Bucket=os.getenv("BUCKET_NAME"), Key=bucket_key)
 
     # Read the TSV/CSV stream
-    return pd.read_csv(obj["Body"], sep="\t")
+    return pd.read_csv(
+        io.StringIO(obj["Body"].read().decode("utf-8")), sep=None, engine="python"
+    )
 
 
 # Upload processed data to S3 bucket as CSV

@@ -1,0 +1,29 @@
+name: Scheduled Automated Retraining
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Every Sunday
+  workflow_dispatch:
+
+jobs:
+  retrain_model:
+    runs-on: ubuntu-latest
+    # Run the steps inside the container image you built in your CI/CD workflow
+    container:
+      image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/machinery-anomaly-detection:latest
+      credentials:
+        username: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+    - name: Configure Production Environment Variables
+      run: |
+        export AWS_DEFAULT_REGION=us-east-1
+        export MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}
+
+    - name: Run Complete Pipeline Chain
+      run: |
+        python src/simulate_labels.py				# ground truth generating
+        python src/evaluate_inference_performance.py		# inference and ground truth joining and current performance evaluating
+        python src/models/retraining.py			# inference and ground truth joining, current performance evaluating and retraining
+        python src/models/evaluate_models_for_promotion.py	# metric comparing and challenger to production promoting
