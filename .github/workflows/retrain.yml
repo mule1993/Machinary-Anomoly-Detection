@@ -30,7 +30,7 @@ jobs:
     container:
       image: "${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/machinery-anomaly-detection:latest"
       credentials:
-        username: AWS  # AWS ECR username is always literally 'AWS'
+        username: "AWS"  # Wrapped in quotes
         password: "${{ needs.get-token.outputs.ecr_token }}" # Wrapped in quotes
 
     steps:
