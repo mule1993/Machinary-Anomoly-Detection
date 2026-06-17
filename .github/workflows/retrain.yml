@@ -40,7 +40,7 @@ jobs:
           # Pull the production image from ECR
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           
-          # Run in the foreground (no -d) and pass all required variables
+          # Run in the foreground
           docker run --rm \
             -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
             -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
@@ -52,4 +52,4 @@ jobs:
             -e BUCKET_NAME=$BUCKET_NAME \
             -e PYTHONPATH=. \
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            sh -c "python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
+            sh -c "python src/simulate_labels.py --config-dir /config && python src/evaluate_inference_performance.py --config-dir /config && python src/models/retraining.py --config-dir /config && python src/models/evaluate_models_for_promotion.py --config-dir /config"
