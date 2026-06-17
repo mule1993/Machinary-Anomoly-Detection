@@ -21,10 +21,6 @@ dynamic_scale_weight = 1
 # ==============================================================
 
 
-<<<<<<< HEAD
-# @hydra.main(version_base=None, config_path="../../config/", config_name="config")
-=======
->>>>>>> 53adc2763cd7db7a5134fbe9d366b665e3c60972
 @hydra.main(version_base=None, config_path="../../config", config_name="config")
 def retraining(config: DictConfig):
     OmegaConf.set_readonly(config, False)
