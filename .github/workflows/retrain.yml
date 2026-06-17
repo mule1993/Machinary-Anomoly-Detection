@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     # Run the steps inside the container image you built in your CI/CD workflow
     container:
-      image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/machinery-anomaly-detection:latest
+      image: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/machinery-anomaly-detection:latest
       credentials:
         username: ${{ secrets.AWS_ACCESS_KEY_ID }}
         password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
