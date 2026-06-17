@@ -48,5 +48,6 @@ jobs:
             -e MODEL_NAME=$MODEL_NAME \
             -e MODEL_ALIAS=$MODEL_ALIAS \
             -e BUCKET_NAME=$BUCKET_NAME \
+            -e PYTHONPATH=. \
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             sh -c "python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
