@@ -39,9 +39,9 @@ jobs:
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           
-          # Add --entrypoint sh to override the FastAPI server
+          # Set empty entrypoint, then invoke bash/sh explicitly after the image name
           docker run --rm \
-            --entrypoint sh \
+            --entrypoint "" \
             -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
             -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
             -e AWS_DEFAULT_REGION=us-east-1 \
@@ -50,6 +50,4 @@ jobs:
             -e MODEL_ALIAS=$MODEL_ALIAS \
             -e BUCKET_NAME=$BUCKET_NAME \
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            # sh -c "python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
-            # PYTHONPATH=../.. sh -c "cd ../.. && python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
-            -c "cd /app && python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
+            bash -c "cd /app && python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
