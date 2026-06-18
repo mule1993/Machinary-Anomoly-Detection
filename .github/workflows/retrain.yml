@@ -42,6 +42,10 @@ jobs:
           ALIAS1: "challenger"
           TARGET_METRIC: "f1"
           EXPERIMENT_NAME: "machinery-failure.anomaly-detection"
+
+          RAW_DATA_PATH: "data/raw/ai4i2020.csv"
+          MODEL_DESCRIPTION: "An XGBoost model for machinery failure anomaly detection"
+          MODEL_RUN_NAME: "xgboost_baseline"
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           
@@ -59,6 +63,9 @@ jobs:
             -e HYDRA_FULL_ERROR=1 \
             -e ALIAS1=$ALIAS1 \
             -e TARGET_METRIC=$TARGET_METRIC \
+            -e RAW_DATA_PATH=$RAW_DATA_PATH \
+            -e MODEL_DESCRIPTION=$MODEL_DESCRIPTION \
+            -e MODEL_RUN_NAME=$MODEL_RUN_NAME \
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG 3600
           
           # 2. Inject the config folder using the relative path indicator
