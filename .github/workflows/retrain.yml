@@ -36,6 +36,7 @@ jobs:
           MODEL_ALIAS: "production"                    # Replace with your real alias config
           BUCKET_NAME: "machinery-mlops-muluneh-2026"
           ALIAS1: "challenger"
+          TARGET_METRIC: "f1" # The metric to monitor for retraining
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           
@@ -49,5 +50,7 @@ jobs:
             -e MODEL_NAME=$MODEL_NAME \
             -e MODEL_ALIAS=$MODEL_ALIAS \
             -e BUCKET_NAME=$BUCKET_NAME \
+            -e ALIAS1=$ALIAS1 \
+            -e TARGET_METRIC=$TARGET_METRIC \
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             bash -c "cd /app && python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
