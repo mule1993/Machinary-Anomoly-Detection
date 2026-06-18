@@ -51,4 +51,5 @@ jobs:
             -e BUCKET_NAME=$BUCKET_NAME \
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             # sh -c "python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
-            PYTHONPATH=../.. sh -c "cd ../.. && python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
+            # PYTHONPATH=../.. sh -c "cd ../.. && python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
+            -c "cd /app && python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
