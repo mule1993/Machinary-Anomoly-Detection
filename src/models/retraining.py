@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -28,14 +29,19 @@ load_dotenv()
 # Define thresholds for your system
 MINIMUM_SUPPORT_TO_RETRAIN = 10  # Don't retrain on tiny samples
 F1_THRESHOLD = 0.81  # Retrain if model performance falls below this
-# ALIAS = os.environ["ALIAS1"]
-ALIAS = "challenger"
+ALIAS = os.environ["ALIAS1"]
 DATA_PATH = "data/year=2026/month=06/clean_training_set.csv"
 dynamic_scale_weight = 1
 # ==============================================================
 
 
-@hydra.main(version_base=None, config_path="../../config", config_name="config")
+# @hydra.main(version_base=None, config_path="../../config", config_name="config")
+# def retraining(config: DictConfig):
+#    OmegaConf.set_readonly(config, False)
+config_directory = "/config" if os.path.exists("/config") else "../../config"
+
+
+@hydra.main(version_base=None, config_path=config_directory, config_name="config")
 def retraining(config: DictConfig):
     OmegaConf.set_readonly(config, False)
 
