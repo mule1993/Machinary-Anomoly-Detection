@@ -55,10 +55,10 @@ jobs:
             -e TARGET_METRIC=$TARGET_METRIC \
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG 3600
           
-          # 2. Forcibly inject the workspace config folder straight into /app/config
-          docker cp config retrain_worker:/app/config
+          # 2. Inject the config folder using the relative path indicator
+          docker cp ./config retrain_worker:/app/config
           
-          # 3. Execute the pipeline scripts sequentially inside the live container
+          # 3. Execute the pipeline scripts sequentially
           docker exec retrain_worker bash -c "cd /app && python src/simulate_labels.py && python src/evaluate_inference_performance.py && python src/models/retraining.py && python src/models/evaluate_models_for_promotion.py"
           
           # 4. Clean up the container when done
