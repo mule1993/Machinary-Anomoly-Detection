@@ -10,7 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Authenticate cleanly with AWS
+      # 1. CRITICAL: Clone the repository so that the ./config directory actually exists on the runner
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Authenticate cleanly with AWS
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -18,25 +22,25 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # 2. Log into ECR natively to establish pulling permissions
+      # 3. Log into ECR natively to establish pulling permissions
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-     # 3. Pull and run your processing pipeline directly inside the container
+     # 4. Pull and run your processing pipeline directly inside the container
       - name: Pull and Execute Retraining Container
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: "machinery-prod" # Matches your EC2 repository name
+          ECR_REPOSITORY: "machinery-prod"
           IMAGE_TAG: "latest"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
-          MODEL_NAME: "machinery_failure_anomaly_detector" # Replace with your real model name config
-          MODEL_ALIAS: "production"                    # Replace with your real alias config
+          MODEL_NAME: "machinery_failure_anomaly_detector"
+          MODEL_ALIAS: "production"
           BUCKET_NAME: "machinery-mlops-muluneh-2026"
           ALIAS1: "challenger"
-          TARGET_METRIC: "f1" # The metric to monitor for retraining
+          TARGET_METRIC: "f1"
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           
