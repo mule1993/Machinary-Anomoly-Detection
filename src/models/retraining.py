@@ -1,4 +1,3 @@
-import os
 import sys
 from pathlib import Path
 
@@ -29,7 +28,8 @@ load_dotenv()
 # Define thresholds for your system
 MINIMUM_SUPPORT_TO_RETRAIN = 10  # Don't retrain on tiny samples
 F1_THRESHOLD = 0.81  # Retrain if model performance falls below this
-ALIAS = os.environ["ALIAS1"]
+# ALIAS = os.environ["ALIAS1"]
+ALIAS = "challenger"
 DATA_PATH = "data/year=2026/month=06/clean_training_set.csv"
 dynamic_scale_weight = 1
 # ==============================================================
