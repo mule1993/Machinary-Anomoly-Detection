@@ -1,0 +1,6 @@
+project:
+  name: orchestration
+docker:
+  env:
+    - name: AIRFLOW_VAR_PROJECT_ROOT
+      value: /usr/local/airflow/host_repo
