@@ -4,11 +4,14 @@ services:
     volumes:
       - ..:/usr/local/airflow/host_repo
       - /var/run/docker.sock:/var/run/docker.sock
+      - /home/muluneh/.docker/config.json:/root/.docker/config.json:ro  # <--- Mount host credentials (Read-Only)
   webserver:
     volumes:
       - ..:/usr/local/airflow/host_repo
       - /var/run/docker.sock:/var/run/docker.sock
+      - /home/muluneh/.docker/config.json:/root/.docker/config.json:ro
   triggerer:
     volumes:
       - ..:/usr/local/airflow/host_repo
       - /var/run/docker.sock:/var/run/docker.sock
+      - /home/muluneh/.docker/config.json:/root/.docker/config.json:ro

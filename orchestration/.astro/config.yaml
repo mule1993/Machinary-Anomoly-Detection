@@ -1,6 +1,10 @@
 project:
   name: orchestration
-docker:
+webserver:
   env:
-    - name: AIRFLOW_VAR_PROJECT_ROOT
-      value: /usr/local/airflow/host_repo
+    - AWS_PROFILE=default
+scheduler:
+  volumes:
+    - /home/muluneh/.aws:/home/astro/.aws:ro
+  env:
+    - AWS_PROFILE=default
