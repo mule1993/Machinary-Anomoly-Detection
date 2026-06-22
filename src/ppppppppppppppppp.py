@@ -56,7 +56,7 @@ try:
         client.delete_experiment(experiment_id=exp.experiment_id)
     print("✓ Custom experiments soft-deleted.")
 except Exception as e:
-    print(f"Error cleaning Experiments: {e}")"""
+    print(f"Error cleaning Experiments: {e}")
 
 # CSV to JSON conversion script
 import csv
@@ -110,3 +110,4 @@ with open(json_file_path, mode="w", encoding="utf-8") as json_file:
     json.dump(data, json_file, indent=2)
 
 print("Conversion complete! Tab-separated values successfully parsed.")
+"""

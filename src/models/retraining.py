@@ -43,6 +43,9 @@ def retraining(config: DictConfig):
     # data balance weight hyeperparameters change not architectural hyperparameters
     config.data_path = DATA_PATH
     config.hyperparameters.scale_pos_weight = dynamic_scale_weight
+    print(f"INFO: retraining with scale_pos_weight={dynamic_scale_weight}")
+    print(f"and data_path={DATA_PATH}")
+
     config.alias = ALIAS
     train_pipeline(config)
 
