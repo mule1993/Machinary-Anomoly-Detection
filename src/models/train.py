@@ -14,9 +14,8 @@ from src.data.ingest import load_csv_from_s3_and_validate
 from src.data.preprocess import build_preprocessor
 from src.data.schemas import MachineFeaturesSchema
 from src.models.StreamedPipelineWrapper import StreamedPipelineWrapper
-
+import os
 load_dotenv()
-
 # ================= CONFIGURATION =================
 # Load environment variables from .env file
 # BUCKET_NAME = os.environ["BUCKET_NAME"]
@@ -81,6 +80,7 @@ def evaluate_model(model, X_test, y_test):
 
 # Initialize MLflow experiment, train the model and log everything
 def train_pipeline(config: DictConfig):
+    print("\n--pipeline started ---")
     # Set the experiment
     try:
         mlflow.create_experiment(name=config.experiment_name)
@@ -89,6 +89,7 @@ def train_pipeline(config: DictConfig):
     mlflow.set_experiment(config.experiment_name)
 
     # The Run
+    print("\n---mlflow found---")
     with mlflow.start_run(run_name=config.model_run_name) as run:
         run_id = run.info.run_id
         print(f"Tracking URI: {mlflow.get_tracking_uri()}")
@@ -166,6 +167,7 @@ def train_pipeline(config: DictConfig):
 # Load the external configuration layer
 @hydra.main(version_base=None, config_path="../../config/", config_name="config")
 def training(config: DictConfig):
+    print("\n---training pipeline ---")
     train_pipeline(config)
 
 

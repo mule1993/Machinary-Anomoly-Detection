@@ -6,6 +6,8 @@ import hydra
 from dotenv import load_dotenv
 from omegaconf import DictConfig, OmegaConf
 from sklearn.metrics import classification_report
+import os
+import mlflow
 
 # Import the bulletproof extraction and join functions from your previous script
 # 1. Dynamically locate the absolute path of the project root
@@ -29,7 +31,6 @@ load_dotenv()
 # Define thresholds for your system
 MINIMUM_SUPPORT_TO_RETRAIN = 10  # Don't retrain on tiny samples
 F1_THRESHOLD = 0.81  # Retrain if model performance falls below this
-ALIAS = os.environ["ALIAS1"]
 DATA_PATH = "data/year=2026/month=06/clean_training_set.csv"
 dynamic_scale_weight = 1
 # ==============================================================
@@ -46,7 +47,8 @@ def retraining(config: DictConfig):
     print(f"INFO: retraining with scale_pos_weight={dynamic_scale_weight}")
     print(f"and data_path={DATA_PATH}")
 
-    config.alias = ALIAS
+#    config.alias = alias1
+    print("pipeline start")
     train_pipeline(config)
 
 

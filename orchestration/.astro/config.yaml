@@ -1,10 +1,7 @@
 project:
   name: orchestration
 webserver:
+  port: 8080
+docker:
   env:
-    - AWS_PROFILE=default
-scheduler:
-  volumes:
-    - /home/muluneh/.aws:/home/astro/.aws:ro
-  env:
-    - AWS_PROFILE=default
+    - DOCKER_GID=988

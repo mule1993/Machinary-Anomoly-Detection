@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-
 from airflow import DAG
 from airflow.decorators import task
 from airflow.models.connection import Connection
@@ -8,6 +7,19 @@ from airflow.providers.amazon.aws.hooks.ecr import EcrHook
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.utils.session import create_session
 from docker.types import Mount
+import os
+
+# 1. Grab the host repository root from the environment variable if present
+HOST_REPO_ROOT = os.getenv("HOST_REPO_ROOT")
+
+if HOST_REPO_ROOT:
+    # Running on EC2 production instance
+    CONFIG_HOST_PATH = os.path.join(HOST_REPO_ROOT, "config")
+else:
+    # Fallback configuration for your local laptop environment
+    DAG_DIR = os.path.dirname(os.path.abspath(__file__))
+    REPO_ROOT = os.path.abspath(os.path.join(DAG_DIR, "../.."))
+    CONFIG_HOST_PATH = os.path.join(REPO_ROOT, "config")
 
 default_args = {
     "owner": "mlops_engineer",
@@ -117,7 +129,14 @@ with DAG(
         force_pull=True,
         working_dir="/app",
         environment=container_env,
-        mounts=[config_mount],
+        mounts=[
+        Mount(
+            # Update this to your verified host tracking directory configuration
+            source="/opt/machinery-anomaly-detection/config", 
+            target="/app/config",
+            type="bind"
+        )
+    ],
         command=["python", "src/evaluate_inference_performance.py"],
         docker_url="unix://var/run/docker.sock",
         network_mode="bridge",
@@ -130,15 +149,24 @@ with DAG(
         task_id="docker_retrain_model",
         image=IMAGE_URI,
         container_name="airflow_retrain_model",
-        auto_remove="success",
+        auto_remove="force",
         force_pull=True,
         mount_tmp_dir=False,
         working_dir="/app",
         environment=container_env,
-        mounts=[config_mount],
-        command=["python", "src/models/retraining.py"],
+        mounts=[
+        Mount(
+            # Update this to your verified host tracking directory configuration
+            source=CONFIG_HOST_PATH,
+            target="/app/config",
+            type="bind"
+        )
+    ],
+        # Dynamically format the tracking URI into the command line string for Hydra
+        # Force Hydra to run with a clean runtime directory structure so it never caches old tracking IPs
+        command="python src/models/retraining.py",
         docker_url="unix://var/run/docker.sock",
-        network_mode="bridge",
+        network_mode="host",
         docker_conn_id="ecr_docker_registry",
         extra_hosts={"host.docker.internal": "host-gateway"},  # <--- ADD THIS
     )

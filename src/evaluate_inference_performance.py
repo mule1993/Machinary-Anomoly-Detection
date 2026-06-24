@@ -8,11 +8,23 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from sklearn.metrics import classification_report
+from botocore.config import Config
 
+# Configure boto3 to explicitly look at the EC2 Metadata Service
+aws_config = Config(
+    retries={'max_attempts': 3},
+    connect_timeout=5,
+    read_timeout=5,
+    parameter_validation=True
+)
 load_dotenv()
 
 S3_BUCKET_NAME = os.getenv("BUCKET_NAME")
-s3_client = boto3.client("s3")
+# Force boto3 to check the instance profile role metadata path natively
+s3_client = boto3.client(
+    "s3", 
+    config=aws_config
+)
 year = os.getenv("EVAL_YEAR")
 month = os.getenv("EVAL_MONTH")
 
