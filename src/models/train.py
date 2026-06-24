@@ -81,6 +81,7 @@ def evaluate_model(model, X_test, y_test):
 # Initialize MLflow experiment, train the model and log everything
 def train_pipeline(config: DictConfig):
     print("\n--pipeline started ---")
+    print(f"MLflow Tracking URI: {os.getenv('MLFLOW_TRACKING_URI')}")
     # Set the experiment
     try:
         mlflow.create_experiment(name=config.experiment_name)

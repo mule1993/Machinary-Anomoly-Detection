@@ -6,6 +6,11 @@ alias: ${oc.env:MODEL_ALIAS}
 model_description: ${oc.env:MODEL_DESCRIPTION}
 model_run_name: ${oc.env:MODEL_RUN_NAME}
 target_metric: ${oc.env:TARGET_METRIC}
+alias1: ${oc.env:ALIAS1}
+
+mlflow:
+  tracking_uri: ${oc.env:MLFLOW_TRACKING_URI, "http://localhost:5000"}
+
 data:
   test_size: 0.2
   random_state: 42
