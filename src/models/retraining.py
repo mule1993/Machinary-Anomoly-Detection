@@ -1,4 +1,3 @@
-import os
 import sys
 from pathlib import Path
 
@@ -6,8 +5,6 @@ import hydra
 from dotenv import load_dotenv
 from omegaconf import DictConfig, OmegaConf
 from sklearn.metrics import classification_report
-import os
-import mlflow
 
 # Import the bulletproof extraction and join functions from your previous script
 # 1. Dynamically locate the absolute path of the project root
@@ -47,7 +44,7 @@ def retraining(config: DictConfig):
     print(f"INFO: retraining with scale_pos_weight={dynamic_scale_weight}")
     print(f"and data_path={DATA_PATH}")
 
-#    config.alias = alias1
+    #    config.alias = alias1
     print("pipeline start")
     train_pipeline(config)
 

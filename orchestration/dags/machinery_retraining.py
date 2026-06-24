@@ -1,4 +1,6 @@
+import os
 from datetime import datetime, timedelta
+
 from airflow import DAG
 from airflow.decorators import task
 from airflow.models.connection import Connection
@@ -7,7 +9,6 @@ from airflow.providers.amazon.aws.hooks.ecr import EcrHook
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.utils.session import create_session
 from docker.types import Mount
-import os
 
 # 1. Grab the host repository root from the environment variable if present
 HOST_REPO_ROOT = os.getenv("HOST_REPO_ROOT")
@@ -81,16 +82,16 @@ with DAG(
         "AWS_SECRET_ACCESS_KEY": "{{ ti.xcom_pull(task_ids='sync_ecr_connection')['aws_secret_key'] }}",
         "AWS_DEFAULT_REGION": "us-east-1",
         "MLFLOW_TRACKING_URI": os.getenv("MLFLOW_TRACKING_URI"),
-        "BUCKET_NAME":  os.getenv("BUCKET_NAME"),
-        "MODEL_NAME":  os.getenv("MODEL_NAME"),
-        "MODEL_ALIAS":  os.getenv("MODEL_ALIAS"),
-        "ALIAS1":  os.getenv("ALIAS1"),
-        "TARGET_METRIC":  os.getenv("TARGET_METRIC"),
-        "EXPERIMENT_NAME":  os.getenv("EXPERIMENT_NAME"),
-        "RAW_DATA_PATH":  os.getenv("RAW_DATA_PATH"),
-        "MODEL_DESCRIPTION":  os.getenv("MODEL_DESCRIPTION"),
-        "MODEL_RUN_NAME":  os.getenv("MODEL_RUN_NAME"),
-        "DATA_PATH":  os.getenv("RAW_DATA_PATH"),
+        "BUCKET_NAME": os.getenv("BUCKET_NAME"),
+        "MODEL_NAME": os.getenv("MODEL_NAME"),
+        "MODEL_ALIAS": os.getenv("MODEL_ALIAS"),
+        "ALIAS1": os.getenv("ALIAS1"),
+        "TARGET_METRIC": os.getenv("TARGET_METRIC"),
+        "EXPERIMENT_NAME": os.getenv("EXPERIMENT_NAME"),
+        "RAW_DATA_PATH": os.getenv("RAW_DATA_PATH"),
+        "MODEL_DESCRIPTION": os.getenv("MODEL_DESCRIPTION"),
+        "MODEL_RUN_NAME": os.getenv("MODEL_RUN_NAME"),
+        "DATA_PATH": os.getenv("RAW_DATA_PATH"),
         "HYDRA_FULL_ERROR": "1",
     }
 
@@ -130,13 +131,13 @@ with DAG(
         working_dir="/app",
         environment=container_env,
         mounts=[
-        Mount(
-            # Update this to your verified host tracking directory configuration
-            source="/opt/machinery-anomaly-detection/config", 
-            target="/app/config",
-            type="bind"
-        )
-    ],
+            Mount(
+                # Update this to your verified host tracking directory configuration
+                source="/opt/machinery-anomaly-detection/config",
+                target="/app/config",
+                type="bind",
+            )
+        ],
         command=["python", "src/evaluate_inference_performance.py"],
         docker_url="unix://var/run/docker.sock",
         network_mode="bridge",
@@ -155,13 +156,13 @@ with DAG(
         working_dir="/app",
         environment=container_env,
         mounts=[
-        Mount(
-            # Update this to your verified host tracking directory configuration
-            source=CONFIG_HOST_PATH,
-            target="/app/config",
-            type="bind"
-        )
-    ],
+            Mount(
+                # Update this to your verified host tracking directory configuration
+                source=CONFIG_HOST_PATH,
+                target="/app/config",
+                type="bind",
+            )
+        ],
         # Dynamically format the tracking URI into the command line string for Hydra
         # Force Hydra to run with a clean runtime directory structure so it never caches old tracking IPs
         command="python src/models/retraining.py",
@@ -182,13 +183,13 @@ with DAG(
         working_dir="/app",
         environment=container_env,
         mounts=[
-        Mount(
-            # Update this to your verified host tracking directory configuration
-            source=CONFIG_HOST_PATH,
-            target="/app/config",
-            type="bind"
-        )
-    ],
+            Mount(
+                # Update this to your verified host tracking directory configuration
+                source=CONFIG_HOST_PATH,
+                target="/app/config",
+                type="bind",
+            )
+        ],
         command="python src/models/evaluate_models_for_promotion.py",
         docker_url="unix://var/run/docker.sock",
         network_mode="host",
