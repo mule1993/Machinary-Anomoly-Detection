@@ -1,14 +1,31 @@
-# ONLY ignore the data folder at the very top of the project
-/data/
+# ==========================================
+# 1. PYTHON ENVIRONMENT & ORCHESTRATION
+# ==========================================
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+.gitignore.bak
+.astro/
 
-# Keep these to ignore large files elsewhere just in case
+# ==========================================
+# 2. GLOBAL EXTENSIONS (BLOCK LARGE FILES)
+# ==========================================
 *.csv
 *.parquet
 *.tar.gz
 *.joblib
 *.pkl
 
-# Python environment
-.venv/
-__pycache__/
-.env
+# ==========================================
+# 3. DATA DIRECTORY & DVC EXCEPTIONS
+# ==========================================
+# Target contents inside data, but allow Git to read the folder structure
+/data/*
+/data/**/*
+
+# EXCEPTION: Whitelist all DVC tracking files everywhere
+!*.dvc
+!/**/.dvc
+!/data/**/*.dvc

@@ -1,7 +1,0 @@
-project:
-  name: orchestration
-webserver:
-  port: 8080
-docker:
-  env:
-    - DOCKER_GID=988
