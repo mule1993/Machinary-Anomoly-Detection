@@ -1,14 +1,18 @@
-# ONLY ignore the data folder at the very top of the project
-/data/
+# Tell Git to ignore files INSIDE data, but allow it to read the folder structure
+/data/**
 
-# Keep these to ignore large files elsewhere just in case
+# EXCEPTION: Explicitly allow the .dvc metadata files
+!/data/**/*.dvc
+
+# Global file patterns to block large binaries elsewhere
 *.csv
 *.parquet
 *.tar.gz
 *.joblib
 *.pkl
 
-# Python environment
+# Python environment & orchestration files
 .venv/
 __pycache__/
 .env
+.astro/
