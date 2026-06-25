@@ -1,10 +1,12 @@
-# Tell Git to ignore files INSIDE data, but allow it to read the folder structure
-/data/**
+# 1. Ignore the files inside data, but DO NOT block the folder itself
+/data/*
+/data/**/*
 
-# EXCEPTION: Explicitly allow the .dvc metadata files
+# 2. EXCEPTION: Force Git to track any .dvc pointer files
 !/data/**/*.dvc
+!*.dvc
 
-# Global file patterns to block large binaries elsewhere
+# 3. Global file patterns to block large binaries elsewhere
 *.csv
 *.parquet
 *.tar.gz
