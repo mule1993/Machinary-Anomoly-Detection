@@ -1,0 +1,10 @@
+md5: 0d2fa2836d3e50ee1c67af67615b82e7
+frozen: true
+deps:
+- etag: 73a522c89c8aff3de9b272d04555b27d
+  size: 518147
+  hash: md5
+  path: s3://machinery-mlops-muluneh-2026/data/raw/ai4i2020.csv
+outs:
+- hash: md5
+  path: ai4i2020.csv
