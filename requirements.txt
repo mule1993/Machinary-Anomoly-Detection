@@ -13,3 +13,8 @@ python-dotenv==1.2.2
 scikit_learn==1.8.0
 uvicorn==0.48.0
 xgboost==3.2.0
+apache-airflow==3.2.2
+botocore==1.43.0
+docker_py==1.10.6
+pytest==9.0.3
+ruamel.base==1.0.0
