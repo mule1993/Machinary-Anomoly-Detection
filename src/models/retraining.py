@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -16,7 +17,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 # Now your existing absolute imports will work flawlessly anywhere!
-from src.evaluate_inference_performance import (  # noqa: E402
+from src.models.evaluate_inference_performance import (  # noqa: E402
     extract_scalar_value,
     fetch_and_join_datasets,
 )
@@ -28,7 +29,7 @@ load_dotenv()
 # Define thresholds for your system
 MINIMUM_SUPPORT_TO_RETRAIN = 10  # Don't retrain on tiny samples
 F1_THRESHOLD = 0.81  # Retrain if model performance falls below this
-DATA_PATH = "data/year=2026/month=06/clean_training_set.csv"
+RETRAINING_DATA_PATH = os.getenv("RETRAINING_DATA_PATH")
 dynamic_scale_weight = 1
 # ==============================================================
 
@@ -39,10 +40,10 @@ def retraining(config: DictConfig):
 
     # Overrides for retraining,
     # data balance weight hyeperparameters change not architectural hyperparameters
-    config.data_path = DATA_PATH
+    config.data_path = RETRAINING_DATA_PATH
     config.hyperparameters.scale_pos_weight = dynamic_scale_weight
     print(f"INFO: retraining with scale_pos_weight={dynamic_scale_weight}")
-    print(f"and data_path={DATA_PATH}")
+    print(f"and data_path={RETRAINING_DATA_PATH}")
 
     #    config.alias = alias1
     print("pipeline start")
@@ -103,7 +104,7 @@ def run_automated_maintenance_loop():
         )
         return
 
-    # 5. RETRAINING TRIGGERED
+    # 5. RETRAINING TRIGGEREDs
     print(
         f"🚨 ALERT: Performance dropped below threshold! (F1: {anomaly_f1:.2f} < {F1_THRESHOLD})"
     )

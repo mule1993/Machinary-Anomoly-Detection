@@ -1,3 +1,6 @@
+import os
+import subprocess
+
 import hydra
 import mlflow
 import xgboost as xgb
@@ -11,10 +14,11 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 
 from src.data.ingest import load_csv_from_s3_and_validate
-from src.data.preprocess import build_preprocessor
-from src.data.schemas import MachineFeaturesSchema
+from src.features.preprocess import build_preprocessor
+from src.features.schemas import MachineFeaturesSchema
 from src.models.StreamedPipelineWrapper import StreamedPipelineWrapper
-import os
+from src.utils.tracking import get_dvc_hash_from_data_path
+
 load_dotenv()
 # ================= CONFIGURATION =================
 # Load environment variables from .env file
@@ -42,7 +46,19 @@ conda_env = {
  "name": "mlflow_env",
  }"""
 
+
 # =================================================
+
+
+def get_current_git_sha():
+    try:
+        return (
+            subprocess.check_output(["git", "rev-parse", "HEAD"])
+            .decode("utf-8")
+            .strip()
+        )
+    except Exception:
+        return "unknown-production-env"
 
 
 # Load and split data
@@ -99,6 +115,13 @@ def train_pipeline(config: DictConfig):
         # LOG THE HYPERPARAMETERS AS METADATA
         mlflow.log_params(config["hyperparameters"])
         mlflow.log_param("test_size", config["data"]["test_size"])
+
+        # LOG THE DVC DATA HASH AS METADATA
+        raw_data_version_hash = get_dvc_hash_from_data_path(config.data_path)
+        mlflow.set_tag("raw_data_version", raw_data_version_hash)
+        # mlflow.set_tag("processed_data_version", processed_hash)
+        mlflow.set_tag("git_commit_sha", get_current_git_sha())
+
         # load data and build pipeline
         X_train, X_test_, y_train, y_test = load_and_split(config)
         preprocessor = build_preprocessor(X_train)
@@ -174,3 +197,4 @@ def training(config: DictConfig):
 
 if __name__ == "__main__":
     training()
+    # print(get_dvc_hash_from_data_path("data/raw/ai4i2020.csv"))

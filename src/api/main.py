@@ -9,7 +9,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException
 from mlflow import MlflowClient
 
 from src.data.ingest import upload_payload_to_s3
-from src.data.schemas import MachineFeaturesSchema, MachineInferencePayload
+from src.features.schemas import MachineFeaturesSchema, MachineInferencePayload
 
 app = FastAPI()
 
