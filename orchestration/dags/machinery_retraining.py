@@ -113,7 +113,7 @@ with DAG(
         force_pull=True,
         working_dir="/app",
         environment=container_env,  # <--- ADD THIS LINE HERE
-        command=["python", "src/simulate_labels.py"],
+        command=["python", "src/features/simulate_labels.py"],
         docker_url="unix://var/run/docker.sock",
         network_mode="bridge",
         docker_conn_id="ecr_docker_registry",
@@ -138,7 +138,7 @@ with DAG(
                 type="bind",
             )
         ],
-        command=["python", "src/evaluate_inference_performance.py"],
+        command=["python", "src/models/evaluate_inference_performance.py"],
         docker_url="unix://var/run/docker.sock",
         network_mode="bridge",
         docker_conn_id="ecr_docker_registry",
